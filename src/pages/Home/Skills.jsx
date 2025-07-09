@@ -414,7 +414,7 @@ const Skills = () => {
   };
 
   return (
-    <section id="skills" className="min-h-screen py-8 sm:py-12 transition-colors duration-300" ref={ref}>
+    <section id="skills" className="overflow-x-hidden min-h-screen py-8 sm:py-12 transition-colors duration-300" ref={ref}>
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         {/* Header */}
         <motion.div

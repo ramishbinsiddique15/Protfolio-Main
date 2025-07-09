@@ -75,12 +75,12 @@ const Footer = () => {
       className={`relative  transition-colors duration-300 overflow-hidden`}
       ref={ref}
     >
-      <div className="absolute inset-0 overflow-hidden">
+      {/* <div className="absolute inset-0 overflow-hidden">
         <div className={`absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl ${isDarkMode ? 'bg-[#C778DD]/10' : 'bg-[#C778DD]/8'
           }`} />
         <div className={`absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl ${isDarkMode ? 'bg-[#C778DD]/10' : 'bg-[#C778DD]/8'
           }`} />
-      </div>
+      </div> */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.img
           src={box}
