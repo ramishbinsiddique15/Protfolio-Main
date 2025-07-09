@@ -34,15 +34,12 @@ const Loader = () => {
           setTimeout(typeMessage, 50); // Typing speed
         } else {
           setIsTyping(false);
+          // Increment progress at the end of each message
+          setProgress((prev) => Math.min((currentMessageIndex + 1) * (100 / bootMessages.length), 100));
           currentMessageIndex++;
           currentCharIndex = 0;
           setTimeout(typeMessage, 500); // Delay between messages
         }
-        // Increment progress per message
-        setProgress((prev) => {
-          const increment = 100 / bootMessages.length; // 20% per message
-          return Math.min(prev + increment / (message.length + 10), 100); // Spread increment over chars + pause
-        });
       }
     };
 
@@ -109,32 +106,34 @@ const Loader = () => {
           </motion.span>
         </div>
         {/* Terminal Content */}
-        <div className="p-3 sm:p-4 font-mono text-xs sm:text-sm text-gray-300 min-h-[200px]">
-          <AnimatePresence>
-            {messages.map((message, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-[#C778DD]">$</span>
-                <span>{message}</span>
-              </motion.div>
-            ))}
-            {isTyping && (
-              <motion.span
-                className="text-[#C778DD]"
-                animate={{ opacity: [1, 0] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-              >
-                _
-              </motion.span>
-            )}
-          </AnimatePresence>
-          {/* Progress Bar */}
-          <div className="mt-4">
+        <div className="p-3 sm:p-4 font-mono text-xs sm:text-sm text-gray-300 min-h-[200px] relative">
+          <div className="space-y-1">
+            <AnimatePresence>
+              {messages.map((message, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2"
+                >
+                  <span className="text-[#C778DD]">$</span>
+                  <span>{message}</span>
+                </motion.div>
+              ))}
+              {isTyping && (
+                <motion.span
+                  className="text-[#C778DD]"
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                >
+                  _
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+          {/* Progress Bar - Pinned to Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs text-gray-400">BOOT PROGRESS</span>
               <span className="text-xs text-[#C778DD]">{Math.min(Math.round(progress), 100)}%</span>
