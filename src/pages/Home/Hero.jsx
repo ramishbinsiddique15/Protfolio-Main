@@ -67,7 +67,7 @@ const Hero = () => {
         "Connect with me:",
         "GitHub: https://github.com/ramishbinsiddique15",
         "LinkedIn: https://www.linkedin.com/in/ramish15/",
-        "Twitter: https://twitter.com/ramishbinsiddique",
+        "Gmail: ramishbinsiddique24@gmail.com",
       ],
     },
   }
