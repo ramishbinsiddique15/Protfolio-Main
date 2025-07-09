@@ -94,14 +94,18 @@ const Hero = () => {
 
       if (commands[command]) {
         const cmd = commands[command]
+        // Append each output line with typing animation
         for (const line of cmd.output) {
+          setTerminalLines((prev) => [...prev, ""]) // Add placeholder for typing
           await typeText(line)
         }
         if (cmd.action) {
+          setTerminalLines((prev) => [...prev, ""]) // Add placeholder for action
           await typeText("Executing action...")
           cmd.action()
         }
       } else {
+        setTerminalLines((prev) => [...prev, ""]) // Add placeholder for error
         await typeText(`bash: ${command}: command not found`)
       }
     }
@@ -179,7 +183,7 @@ const Hero = () => {
           variants={terminalVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className={`max-w-4xl mx-auto border-2  shadow-lg ${
+          className={`max-w-4xl mx-auto border-2 shadow-lg ${
             isDarkMode ? "border-gray-700 bg-[#1a1a1a]/90" : "border-gray-300 bg-gray-50/90"
           } backdrop-blur-sm`}
         >
@@ -253,7 +257,7 @@ const Hero = () => {
           {/* Command Input */}
           <div className="p-4 border-t-2 border-gray-700">
             <motion.div
-              className={`flex items-center gap-2 p-2 border-2  ${
+              className={`flex items-center gap-2 p-2 border-2 ${
                 isDarkMode ? "border-gray-600 bg-gray-800/50" : "border-gray-300 bg-gray-100/50"
               }`}
               initial={{ borderColor: isDarkMode ? "#4B5563" : "#D1D5DB" }}
