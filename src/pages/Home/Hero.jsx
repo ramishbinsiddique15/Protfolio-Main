@@ -1,365 +1,283 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { useTheme } from '../../context/ThemeContext';
-import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
-import { ArrowDown, ArrowRight, Terminal, Code, User, Folder, FileText, Coffee, Zap } from 'lucide-react';
-import Typed from 'typed.js';
-import box from "../../assets/box.png";
-import dots from "../../assets/dots.png";
+"use client"
+import { useEffect, useRef, useState, useCallback } from "react"
+import { motion, useInView } from "framer-motion"
+import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa"
+import { Terminal, User, Folder, FileText, Download } from "lucide-react"
+import { useTheme } from "../../context/ThemeContext"
+import dots from "../../assets/dots.png"
 
 const Hero = () => {
-    const { isDarkMode } = useTheme();
-    const [hasAnimated, setHasAnimated] = useState(false);
-    const [terminalLines, setTerminalLines] = useState([]);
-    const [currentLineIndex, setCurrentLineIndex] = useState(0);
-    const [isTyping, setIsTyping] = useState(false);
+  const { isDarkMode } = useTheme()
+  const [input, setInput] = useState("")
+  const [terminalLines, setTerminalLines] = useState([])
+  const [isTyping, setIsTyping] = useState(false)
+  const inputRef = useRef(null)
+  const terminalRef = useRef(null)
+  const isInView = useInView(terminalRef, { once: true, amount: 0.3 })
 
-    const linkVariants = {
-        hidden: { opacity: 0, y: -20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-        hover: { scale: 1.05, transition: { duration: 0.3 } }
-    };
-
-    const glitchVariants = {
-        initial: {
-            x: 0,
-            y: 0,
-            textShadow: '0 0 0 transparent'
-        },
-        hover: {
-            x: [0, -2, 2, -1, 1, 0],
-            y: [0, -1, 1, -1, 0],
-            textShadow: [
-                '0 0 0 transparent',
-                '2px 0 0 #ff0000, -2px 0 0 #00ffff',
-                '-2px 0 0 #ff0000, 2px 0 0 #00ffff',
-                '1px 0 0 #ff0000, -1px 0 0 #00ffff',
-                '0 0 0 transparent'
-            ],
-            transition: {
-                duration: 0.6,
-                ease: "easeInOut"
-            }
-        }
-    };
-
-    const typingVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                duration: 0.1,
-                staggerChildren: 0.1
-            }
-        }
-    };
-
-    const letterVariants = {
-        hidden: { opacity: 0, x: -20 },
-        visible: {
-            opacity: 1,
-            x: 0,
-            transition: { duration: 0.3 }
-        }
-    };
-
-    const typedGlitchVariants = {
-        initial: {
-            textShadow: '0 0 0 transparent'
-        },
-        animate: {
-            textShadow: [
-                '0 0 0 transparent',
-                '2px 0 0 #ff0000, -2px 0 0 #00ffff',
-                '0 0 0 transparent',
-                '-2px 0 0 #ff0000, 2px 0 0 #00ffff',
-                '0 0 0 transparent'
-            ],
-            transition: {
-                duration: 0.3,
-                repeat: Infinity,
-                repeatDelay: 1.5,
-                ease: "easeInOut"
-            }
-        }
-    };
-
-    const buttonGlitchVariants = {
-        initial: {
-            x: 0,
-            y: 0,
-            textShadow: '0 0 0 transparent'
-        },
-        hover: {
-            x: [0, -2, 2, -1, 1, 0],
-            y: [0, -1, 1, -1, 0],
-            textShadow: [
-                '0 0 0 transparent',
-                '2px 0 0 #ff0000, -2px 0 0 #00ffff',
-                '-2px 0 0 #ff0000, 2px 0 0 #00ffff',
-                '1px 0 0 #ff0000, -1px 0 0 #00ffff',
-                '0 0 0 transparent'
-            ],
-            transition: {
-                duration: 0.6,
-                ease: "easeInOut"
-            }
-        }
-    };
-
-    const AnimatedText = ({ children, className = "", variants = glitchVariants, shouldAnimate = false }) => {
-        return (
-            <motion.span
-                className={className}
-                variants={variants}
-                initial="initial"
-                animate="initial"
-                whileHover="hover"
-            >
-                <motion.span
-                    variants={typingVariants}
-                    initial={shouldAnimate ? "hidden" : "visible"}
-                    animate="visible"
-                >
-                    {children.split('').map((char, index) => (
-                        <motion.span
-                            key={index}
-                            variants={letterVariants}
-                            style={{ display: 'inline-block' }}
-                        >
-                            {char === ' ' ? '\u00A0' : char}
-                        </motion.span>
-                    ))}
-                </motion.span>
-            </motion.span>
-        );
-    };
-
-    const typedRef = useRef(null);
-
-    // Terminal animation data
-    const terminalCommands = [
-        { command: "whoami", output: "ramish-bin-siddique", icon: User, delay: 1000 },
-        { command: "pwd", output: "/home/ramish/portfolio", icon: Folder, delay: 1500 },
-        { command: "ls -la skills/", output: "React  Node.js  MongoDB  Express  Python  JavaScript", icon: FileText, delay: 2000 },
-        { command: "cat status.txt", output: "🚀 Available for new opportunities", icon: Code, delay: 2500 },
-        { command: "echo $MOTIVATION", output: "Building the future, one commit at a time", icon: Coffee, delay: 3000 },
-        { command: "git log --oneline -5", output: "feat: Added new portfolio design\nfix: Improved user experience\nchore: Updated dependencies", icon: Zap, delay: 3500 }
-    ];
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setHasAnimated(true);
-            // Start terminal animation after hero animation
-            setTimeout(() => {
-                animateTerminal();
-            }, 2000);
-        }, 100);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    const animateTerminal = () => {
-        if (currentLineIndex < terminalCommands.length) {
-            const currentCommand = terminalCommands[currentLineIndex];
-
-            // Add command line
-            setTerminalLines(prev => [...prev, {
-                type: 'command',
-                content: currentCommand.command,
-                icon: currentCommand.icon
-            }]);
-
-            setIsTyping(true);
-
-            // Add output after delay
-            setTimeout(() => {
-                setTerminalLines(prev => [...prev, {
-                    type: 'output',
-                    content: currentCommand.output
-                }]);
-                setIsTyping(false);
-                setCurrentLineIndex(prev => prev + 1);
-            }, currentCommand.delay);
-        }
-    };
-
-    useEffect(() => {
-        if (currentLineIndex > 0 && currentLineIndex < terminalCommands.length) {
-            setTimeout(() => {
-                animateTerminal();
-            }, 800);
-        }
-    }, [currentLineIndex]);
-
-
-
-    const handleDownloadResume = () => {
+  // Command definitions
+  const commands = {
+    whoami: {
+      icon: User,
+      output: ["Ramish Bin Siddique", "Full-Stack Developer | Passionate about building scalable web solutions"],
+    },
+    pwd: {
+      icon: Folder,
+      output: ["/home/ramish/portfolio", "Crafting innovative digital experiences"],
+    },
+    "cat skills.txt": {
+      icon: FileText,
+      output: ["Tech Stack:", "React.js, Node.js, MongoDB, Express.js, Tailwind CSS, Next.js, Three.js"],
+    },
+    resume: {
+      icon: Download,
+      output: ["Initiating resume download..."],
+      action: () => {
         try {
-            const resumePath = '/Resume.pdf';
-            const link = document.createElement('a');
-            link.href = resumePath;
-            link.download = 'Resume.pdf';
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+          const link = document.createElement("a")
+          link.href = "/Resume.pdf"
+          link.download = "Resume.pdf"
+          link.target = "_blank"
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
         } catch (error) {
-            console.error('Error downloading resume:', error);
-            window.open('/assets/docs/Resume.pdf', '_blank');
+          console.error("Error downloading resume:", error)
+          window.open("/assets/docs/Resume.pdf", "_blank")
         }
-    };
+      },
+    },
+    clear: {
+      output: [],
+      action: () => setTerminalLines([]),
+    },
+    help: {
+      output: [
+        "Available commands:",
+        "whoami - Display my identity",
+        "pwd - Show current project context",
+        "cat skills.txt - List my tech stack",
+        "resume - Download my resume",
+        "clear - Clear the terminal",
+        "connect - Show social links",
+      ],
+    },
+    connect: {
+      output: [
+        "Connect with me:",
+        "GitHub: https://github.com/ramishbinsiddique15",
+        "LinkedIn: https://www.linkedin.com/in/ramish15/",
+        "Twitter: https://twitter.com/ramishbinsiddique",
+      ],
+    },
+  }
 
-    return (
-        <div className="relative min-h-screen pt-20" id='home'>
-            {/* Background Effects */}
-            <div className="absolute inset-0 overflow-hidden">
-        <div className={`absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl ${isDarkMode ? 'bg-[#C778DD]/10' : 'bg-[#C778DD]/8'
-          }`} />
-        <div className={`absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl ${isDarkMode ? 'bg-[#C778DD]/10' : 'bg-[#C778DD]/8'
-          }`} />
+  // Typing effect for terminal output
+  const typeText = useCallback(async (text, delay = 50) => {
+    setIsTyping(true)
+    let currentText = ""
+    for (let i = 0; i <= text.length; i++) {
+      currentText = text.slice(0, i)
+      setTerminalLines((prev) => [...prev.slice(0, -1), currentText])
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+    setTerminalLines((prev) => [...prev.slice(0, -1), currentText])
+    setIsTyping(false)
+  }, [])
+
+  // Handle command submission
+  const handleCommand = async (e) => {
+    if (e.key === "Enter" && input.trim()) {
+      const command = input.trim().toLowerCase()
+      setTerminalLines((prev) => [...prev, `$ ${command}`])
+      setInput("")
+
+      if (commands[command]) {
+        const cmd = commands[command]
+        for (const line of cmd.output) {
+          await typeText(line)
+        }
+        if (cmd.action) {
+          await typeText("Executing action...")
+          cmd.action()
+        }
+      } else {
+        await typeText(`bash: ${command}: command not found`)
+      }
+    }
+  }
+
+  // Focus input on mount
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [])
+
+  // Animation variants
+  const terminalVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
+  }
+
+  const inputVariants = {
+    focus: {
+      borderColor: "#C778DD",
+      boxShadow: "0 0 8px rgba(199, 120, 221, 0.5)",
+      transition: { duration: 0.3 },
+    },
+  }
+
+  return (
+    <section
+      id="home"
+      className={`pt-32 min-h-[calc(100vh-32px)] py-12 transition-colors duration-300 ${isDarkMode ? "bg-[#1a1a1a]" : "bg-gray-100"}`}
+      ref={terminalRef}
+    >
+      {/* Background Effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          className={`absolute top-1/3 left-1/5 w-72 h-72 rounded-full blur-3xl ${
+            isDarkMode ? "bg-[#C778DD]/15" : "bg-[#C778DD]/10"
+          }`}
+        />
+        <div
+          className={`absolute bottom-1/3 right-1/5 w-96 h-96 rounded-full blur-3xl ${
+            isDarkMode ? "bg-[#C778DD]/15" : "bg-[#C778DD]/10"
+          }`}
+        />
+        <motion.img
+          src={dots}
+          className="w-24 absolute top-24 left-48 opacity-60"
+          alt=""
+          animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
+          transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        />
       </div>
 
-            {/* Decorative Elements */}
-            {/* <motion.img
-                src={box}
-                className='w-32 absolute top-20 -right-14 opacity-50'
-                alt=""
-                animate={{
-                    rotate: [0, 360],
-                    scale: [1, 1.1, 1],
-                }}
-                transition={{
-                    duration: 20,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "linear",
-                }}
-            /> */}
-            <motion.img
-                src={dots}
-                className='w-20 absolute top-32 left-60 opacity-70'
-                alt=""
-                animate={{
-                    x: [0, 10, 0],
-                    y: [0, -10, 0],
-                }}
-                transition={{
-                    duration: 6,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "easeInOut",
-                }}
-            />
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={isInView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-10"
+        >
+          <h1
+            className={`text-4xl font-bold font-mono ${isDarkMode ? "text-white" : "text-gray-800"} flex justify-center items-center gap-2`}
+          >
+            <Terminal className="w-8 h-8 text-[#C778DD]" />
+            <span>ramish@portfolio</span>
+          </h1>
+          <p className={`mt-3 font-mono text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+            Type a command (e.g., whoami, resume, help) to explore
+          </p>
+        </motion.div>
 
-            {/* Left Side Content with Absolute Sidebar */}
-            {/* <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-50">
-                <motion.div
-                    className="flex flex-col justify-center items-center space-x-4"
-                    initial={!hasAnimated ? { opacity: 0, x: -50 } : { opacity: 1, x: 0 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <div className="w-0.5 h-32 relative left-2 bg-[#646971]"></div>
-                    <div className="flex flex-col space-y-4 pt-2">
-                        <motion.a href="https://github.com/ramishbinsiddique15" target="_blank" rel="noopener noreferrer" variants={linkVariants} whileHover="hover">
-                            <FaGithub className={`text-[#646971] ${isDarkMode ? "hover:text-white" : "hover:text-[#282C33]"}`} size={24} />
-                        </motion.a>
-                        <motion.a href="https://www.linkedin.com/in/ramish15/" target="_blank" rel="noopener noreferrer" variants={linkVariants} whileHover="hover">
-                            <FaLinkedin className={`text-[#646971] ${isDarkMode ? "hover:text-white" : "hover:text-[#282C33]"}`} size={24} />
-                        </motion.a>
-                    </div>
-                </motion.div>
-            </div> */}
-
-            {/* Main Hero Content */}
-            <div className="flex items-center justify-between p-8 gap-8">
-                {/* Left Side Text Content */}
-
-
-                {/* Right Side Terminal */}
-                <div className="mt-5 w-full flex items-center justify-center">
-                    <motion.div
-                        className={`w-full  border-2 ${isDarkMode ? "border-gray-700 bg-[#1a1a1a]" : "border-gray-300 bg-gray-50"
-                            } relative overflow-hidden`}
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.5 }}
-                    >
-                        {/* Terminal Header */}
-                        <div className={`flex items-center gap-2 p-4 border-b-2 ${isDarkMode ? "border-gray-700" : "border-gray-300"
-                            }`}>
-                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <Terminal className="w-4 h-4 text-[#C778DD] ml-2" />
-                            <span className={`text-sm font-mono ${isDarkMode ? "text-[#607B96]" : "text-gray-600"}`}>
-                                ramish@portfolio:~$
-                            </span>
-                        </div>
-
-                        {/* Terminal Content */}
-                        <div className={`p-4 font-mono text-sm h-[calc(100vh-15rem)] overflow-y-auto ${isDarkMode
-                                ? '[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#C778DD] [&::-webkit-scrollbar-thumb]:rounded-full'
-                                : '[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-gray-50 [&::-webkit-scrollbar-thumb]:bg-[#C778DD] [&::-webkit-scrollbar-thumb]:rounded-full'
-                            }`}>
-                            {terminalLines.map((line, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="mb-2"
-                                >
-                                    {line.type === 'command' ? (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[#C778DD]">$</span>
-                                            <line.icon className="w-4 h-4 text-[#C778DD]" />
-                                            <span className={`${isDarkMode ? "text-white" : "text-[#282C33]"}`}>
-                                                {line.content}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <div className={`pl-6 ${isDarkMode ? "text-gray-300" : "text-gray-700"} whitespace-pre-line`}>
-                                            {line.content}
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))}
-
-                            {/* Cursor */}
-                            {isTyping && (
-                                <motion.div
-                                    className="flex items-center gap-2"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                >
-                                    <span className="text-[#C778DD]">$</span>
-                                    <motion.div
-                                        className={`w-2 h-4 ${isDarkMode ? "bg-white" : "bg-[#282C33]"}`}
-                                        animate={{ opacity: [1, 0] }}
-                                        transition={{ duration: 0.8, repeat: Infinity }}
-                                    />
-                                </motion.div>
-                            )}
-                        </div>
-
-                        {/* Terminal Footer */}
-                        <div className={`p-2 border-t-2 ${isDarkMode ? "border-gray-700" : "border-gray-300"
-                            } flex items-center justify-between`}>
-                            <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 bg-green-500 rounded-full animate-pulse`}></div>
-                                <span className={`text-xs font-mono ${isDarkMode ? "text-[#607B96]" : "text-gray-600"}`}>
-                                    Online
-                                </span>
-                            </div>
-                            <span className={`text-xs font-mono ${isDarkMode ? "text-[#607B96]" : "text-gray-600"}`}>
-                                {terminalLines.length} lines
-                            </span>
-                        </div>
-                    </motion.div>
-                </div>
+        {/* Terminal Interface */}
+        <motion.div
+          variants={terminalVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className={`max-w-4xl mx-auto border-2  shadow-lg ${
+            isDarkMode ? "border-gray-700 bg-[#1a1a1a]/90" : "border-gray-300 bg-gray-50/90"
+          } backdrop-blur-sm`}
+        >
+          {/* Terminal Header */}
+          <div
+            className={`flex items-center gap-2 p-3 border-b-2 ${
+              isDarkMode ? "border-gray-700" : "border-gray-300"
+            }`}
+          >
+            <div className="flex gap-1">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
             </div>
-        </div>
-    );
-};
+            <span className={`font-mono text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+              ~/portfolio/terminal
+            </span>
+            <motion.div
+              className="ml-auto w-2 h-2 bg-green-500 rounded-full"
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+            />
+          </div>
 
-export default Hero;
+          {/* Terminal Content */}
+          <div
+            className={`p-4 font-mono text-sm max-h-[calc(100vh-300px)] overflow-y-auto ${
+              isDarkMode
+                ? "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-[#C778DD] [&::-webkit-scrollbar-thumb]:rounded-full"
+                : "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-gray-50 [&::-webkit-scrollbar-thumb]:bg-[#C778DD] [&::-webkit-scrollbar-thumb]:rounded-full"
+            }`}
+          >
+            {terminalLines.length === 0 ? (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`text-${isDarkMode ? "gray-500" : "gray-400"}`}
+              >
+                Type 'help' for available commands...
+              </motion.p>
+            ) : (
+              terminalLines.map((line, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {line.startsWith("$") ? (
+                    <span className="text-[#C778DD]">{line}</span>
+                  ) : (
+                    <>
+                      <span className="text-[#C778DD]">{">"}</span> {line}
+                    </>
+                  )}
+                </motion.div>
+              ))
+            )}
+            {isTyping && (
+              <motion.span
+                className="text-[#C778DD]"
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.5, repeat: Number.POSITIVE_INFINITY }}
+              >
+                _
+              </motion.span>
+            )}
+          </div>
+
+          {/* Command Input */}
+          <div className="p-4 border-t-2 border-gray-700">
+            <motion.div
+              className={`flex items-center gap-2 p-2 border-2  ${
+                isDarkMode ? "border-gray-600 bg-gray-800/50" : "border-gray-300 bg-gray-100/50"
+              }`}
+              initial={{ borderColor: isDarkMode ? "#4B5563" : "#D1D5DB" }}
+              animate={inputRef.current?.matches(":focus") ? "focus" : {}}
+              variants={inputVariants}
+            >
+              <span className="text-[#C778DD]">$</span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleCommand}
+                className={`flex-1 bg-transparent outline-none font-mono text-sm ${
+                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                }`}
+                placeholder="Type a command..."
+              />
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+export default Hero

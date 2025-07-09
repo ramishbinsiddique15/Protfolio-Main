@@ -21,11 +21,21 @@ function Layout() {
 
 
   return (
-    <div className={`${isDarkMode 
-  ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
-  : 'bg-white'}
+    <div className={` ${isDarkMode ? "bg-[#1a1a1a]" : "bg-gray-100"}
  transition-colors duration-500 min-h-screen`}>
-      
+  <div className="absolute inset-0 overflow-hidden">
+        <div
+          className={`fixed top-1/3 left-1/5 w-72 h-72 rounded-full blur-3xl ${
+            isDarkMode ? "bg-[#C778DD]/15" : "bg-[#C778DD]/10"
+          }`}
+        />
+        <div
+          className={`fixed bottom-1/3 right-1/5 w-96 h-96 rounded-full blur-3xl ${
+            isDarkMode ? "bg-[#C778DD]/15" : "bg-[#C778DD]/10"
+          }`}
+        />
+        </div>
+
 
       <MainContent
         isMobile={isMobile}
@@ -51,7 +61,7 @@ function MainContent() {
 
           </Routes>
         </div>
-        <Footer/>
+        <Footer />
       </motion.main>
     </>
   );

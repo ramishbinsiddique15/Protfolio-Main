@@ -610,13 +610,13 @@ const Contact = () => {
                 </motion.button>
               </form>
 
-             
+
             </div>
 
-            
+
 
           </motion.div>
-           <motion.div
+          {/* <motion.div
                 variants={cardVariants}
                 initial="hidden"
                 animate={hasAnimated ? "visible" : "hidden"}
@@ -696,7 +696,7 @@ const Contact = () => {
                     ))}
                   </div>
                 </div>
-              </motion.div>
+              </motion.div> */}
         </div>
 
         {/* Terminal Summary */}

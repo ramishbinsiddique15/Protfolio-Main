@@ -178,7 +178,7 @@ const FunFacts = () => {
         >
           <div
             className={`inline-flex items-center gap-3 px-4 py-2 border-2 ${
-              isDarkMode ? "border-[#C778DD] bg-[#1a1a1a]" : "border-[#9333ea] bg-gray-50"
+              isDarkMode ? "border-[#C778DD] text-gray-400 bg-[#1a1a1a]" : "border-[#9333ea] bg-gray-50"
             } font-mono text-sm mb-6`}
           >
             <Terminal className="w-4 h-4 text-[#C778DD]" />
